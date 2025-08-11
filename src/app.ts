@@ -16,6 +16,7 @@ import wishlistRoutes from "./routes/wishlist.routes";
 import reviewRoutes from "./routes/review.routes";
 import productRecoRoutes from "./routes/product.reco.routes";
 import aiRoutes from "./routes/ai.routes";
+import adminStatsRoutes from "./routes/admin.stats.routes";
 import path from "path";
 import { UPLOADS_PUBLIC_URL, UPLOADS_ABS_DIR } from "./config/upload";
 
@@ -37,10 +38,14 @@ app.use(helmet());
 app.use(morgan("dev"));
 app.use(sanitizeRequest); // in-place sanitization compatible with Express 5
 
-// rate limit (auth only)
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
-app.use("/api/v1/auth/login", authLimiter);
-app.use("/api/v1/auth/register", authLimiter);
+/** Rate limits */
+const authLoginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 50, standardHeaders: true, legacyHeaders: false });
+const authRegisterLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
+const aiLimiter = rateLimit({ windowMs: 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+
+app.use("/api/v1/auth/login", authLoginLimiter);
+app.use("/api/v1/auth/register", authRegisterLimiter);
+app.use("/api/v1/ai/recommend", aiLimiter);
 
 // routes
 app.use("/api/v1/auth", authRoutes);
@@ -52,6 +57,7 @@ app.use("/api/v1/wishlist", wishlistRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/products", productRecoRoutes);
 app.use("/api/v1/ai", aiRoutes);
+app.use("/api/v1/admin/stats", adminStatsRoutes);
 
 // static uploads
 app.use(

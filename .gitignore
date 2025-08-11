@@ -3,3 +3,10 @@ dist/
 .env
 .env.local
 
+# safety: in case some builds leak into src
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts.env
+uploads/
+node_modules/
+dist/

@@ -60,6 +60,9 @@ const UserSchema = new Schema<IUser>(
     resetToken: { type: String, default: null },
     resetExpires: { type: Date, default: null },
 
+    passwordResetTokenHash: { type: String },
+    passwordResetExpires: { type: Date },
+
     addresses: { type: [AddressSchema], default: [] },
     favoriteCategoryIds: { type: [Schema.Types.ObjectId], ref: "Category", default: [] }
   },
