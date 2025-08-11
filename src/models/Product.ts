@@ -30,7 +30,8 @@ const ProductSchema = new Schema<IProduct>(
     ratingCount: { type: Number, default: 0 },
     stock: { type: Number, required: true, default: 0 },
     mainImage: { type: String },
-    imageUrl: { type: String }
+    imageUrl: { type: String },
+    embedding: { type: [Number], default: undefined }
   },
   { timestamps: true }
 );

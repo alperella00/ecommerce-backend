@@ -12,6 +12,10 @@ import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
 import orderRoutes from "./routes/order.routes";
 import cartRoutes from "./routes/cart.routes";
+import wishlistRoutes from "./routes/wishlist.routes";
+import reviewRoutes from "./routes/review.routes";
+import productRecoRoutes from "./routes/product.reco.routes";
+import aiRoutes from "./routes/ai.routes";
 import path from "path";
 import { UPLOADS_PUBLIC_URL, UPLOADS_ABS_DIR } from "./config/upload";
 
@@ -44,6 +48,10 @@ app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/wishlist", wishlistRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/products", productRecoRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
 // static uploads
 app.use(
