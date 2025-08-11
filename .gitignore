@@ -10,3 +10,4 @@ src/**/*.d.ts.env
 uploads/
 node_modules/
 dist/
+*.map
