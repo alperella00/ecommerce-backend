@@ -115,3 +115,81 @@ export async function resetPassword(req: Request, res: Response) {
   await user.save();
   return res.json({ message: "Password updated" });
 }
+
+// Appended hashed reset token flow
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
+
+const RESET_TTL_MIN = Number(process.env.RESET_TOKEN_TTL_MIN || 30);
+const APP_URL = process.env.APP_URL || "http://localhost:3000";
+
+/** POST /api/v1/auth/request-password-reset (hash-based, always 200) */
+export async function requestPasswordResetHashed(req: any, res: any) {
+  const schema = z.object({ email: z.string().email() });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
+  }
+  const { email } = parsed.data;
+
+  const user = await User.findOne({ email });
+  if (user) {
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const expires = new Date(Date.now() + RESET_TTL_MIN * 60 * 1000);
+
+    (user as any).passwordResetTokenHash = tokenHash;
+    (user as any).passwordResetExpires = expires;
+    await user.save();
+
+    const resetUrl = `${APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
+    const html = `
+      <h2>Reset your password</h2>
+      <p>We received a request to reset your password.</p>
+      <p><a href="${resetUrl}">Click here</a> to set a new password. This link expires in ${RESET_TTL_MIN} minutes.</p>
+      <p>If you did not request this, you can ignore this email.</p>
+    `;
+    try { await sendMail(email, "Reset your password", html); } catch {}
+  }
+
+  return res.json({ message: "If an account exists for this email, a reset link has been sent." });
+}
+
+/** POST /api/v1/auth/reset-password (hash-based) */
+export async function resetPasswordHashed(req: any, res: any) {
+  const schema = z.object({
+    token: z.string().min(10),
+    newPassword: z.string().min(6)
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
+  }
+  const { token, newPassword } = parsed.data;
+
+  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+  const user = await User.findOne({
+    passwordResetTokenHash: tokenHash,
+    passwordResetExpires: { $gt: new Date() }
+  });
+
+  if (!user) {
+    return res.status(400).json({ message: "Invalid or expired reset token" });
+  }
+
+  // Set new password and clear reset fields
+  (user as any).passwordHash = await bcrypt.hash(newPassword, 10);
+  (user as any).passwordResetTokenHash = undefined;
+  (user as any).passwordResetExpires = undefined;
+  await user.save();
+
+  try {
+    await sendMail(
+      user.email,
+      "Your password was changed",
+      `<p>Your password has been updated successfully.</p>`
+    );
+  } catch {}
+
+  return res.json({ message: "Password has been reset successfully" });
+}
