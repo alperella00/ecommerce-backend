@@ -9,18 +9,18 @@ import {
 import { validate } from "../middlewares/validate.middleware";
 import { requireAuth } from "../middlewares/auth.middleware";
 
-const r = Router();
+const router = Router();
 
-r.post("/register", validate(registerSchema), register);
-r.post("/login", validate(loginSchema), login);
-r.get("/me", requireAuth, me);
+// Public routes
+router.post("/register", validate(registerSchema), register);
+router.post("/login", validate(loginSchema), login);
+router.get("/verify-email", verifyEmail);
+router.post("/request-password-reset", validate(requestPasswordResetSchema), requestPasswordReset);
+router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 
-// email verification
-r.post("/request-email-verification", requireAuth, requestEmailVerification);
-r.get("/verify-email", verifyEmail);
+// Protected routes
+router.use(requireAuth);
+router.post("/request-email-verification", requestEmailVerification);
+router.get("/me", me);
 
-// password reset
-r.post("/request-password-reset", validate(requestPasswordResetSchema), requestPasswordReset);
-r.post("/reset-password", validate(resetPasswordSchema), resetPassword);
-
-export default r;
+export default router;
