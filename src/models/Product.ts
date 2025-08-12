@@ -9,11 +9,13 @@ export interface IProduct {
   images: Array<{ url: string; filename?: string }>;
   tags: string[];
   featured: boolean;
+  isActive: boolean;
   ratingAvg: number;
   ratingCount: number;
   stock: number;
   mainImage?: string;
   imageUrl?: string;
+  embedding?: number[];
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -26,6 +28,7 @@ const ProductSchema = new Schema<IProduct>(
     images: [{ url: { type: String }, filename: { type: String } }],
     tags: { type: [String], default: [] },
     featured: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true, index: true },
     ratingAvg: { type: Number, default: 0 },
     ratingCount: { type: Number, default: 0 },
     stock: { type: Number, required: true, default: 0 },
