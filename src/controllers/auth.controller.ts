@@ -48,6 +48,28 @@ export async function me(req: Request, res: Response) {
   return res.json({ user });
 }
 
+/* ===== Update me (profile) ===== */
+export async function updateMe(req: Request, res: Response) {
+  if (!req.userId) return res.status(401).json({ message: "Unauthorized" });
+  const schema = z.object({
+    firstName: z.string().trim().min(1).optional(),
+    lastName: z.string().trim().min(1).optional(),
+    phone: z.string().trim().optional()
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
+  }
+  const update: any = {};
+  if (parsed.data.firstName !== undefined) update.firstName = parsed.data.firstName;
+  if (parsed.data.lastName !== undefined) update.lastName = parsed.data.lastName;
+  if (parsed.data.phone !== undefined) update.phone = parsed.data.phone;
+  const user = await User.findByIdAndUpdate(req.userId, update, { new: true }).select(
+    "email role firstName lastName emailVerified addresses favoriteCategoryIds"
+  );
+  return res.json({ user });
+}
+
 /* ===== Email verification ===== */
 export async function requestEmailVerification(req: Request, res: Response) {
   if (!req.userId) return res.status(401).json({ message: "Unauthorized" });
@@ -100,8 +122,14 @@ export async function requestPasswordReset(req: Request, res: Response) {
   user.resetToken = token;
   user.resetExpires = addMinutes(new Date(), 30);
   await user.save();
-  const resetUrl = `${process.env.APP_URL || "http://localhost:8080"}/api/v1/auth/reset-password?token=${token}`;
-  await sendMail(user.email, "Reset your password", `<p>Reset your password using <a href="${resetUrl}">this link</a>. This link expires in 30 minutes.</p>`);
+  // FE origin for reset link. Prefer APP_WEB_URL; default to localhost:3000 (avoid backend host).
+  const webUrl = process.env.APP_WEB_URL || "http://localhost:3000";
+  const resetUrl = `${webUrl}/reset-password?token=${token}`;
+  await sendMail(
+    user.email,
+    "Reset your password",
+    `<p>Reset your password using <a href="${resetUrl}">this link</a>. This link expires in 30 minutes.</p>`
+  );
   return res.json({ message: "If this email exists, a reset link was sent" });
 }
 
