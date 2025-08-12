@@ -1,9 +1,12 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.middleware";
 import { requireAdmin } from "../middlewares/auth.middleware";
-import { createReview, listProductReviews, approveReview } from "../controllers/review.controller";
+import { createReview, listProductReviews, approveReview, listAllReviewsAdmin } from "../controllers/review.controller";
 
 const router = Router();
+
+// Admin: tüm yorumlar (moderasyon)
+router.get("/", requireAuth, requireAdmin, listAllReviewsAdmin);
 
 // Public: ürünün onaylı/onaysız yorumlarını listeleme (query ile filtre)
 router.get("/product/:id", listProductReviews);
