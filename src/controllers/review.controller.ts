@@ -81,6 +81,44 @@ export async function listProductReviews(req: Request, res: Response) {
   });
 }
 
+const adminListSchema = z.object({
+  query: z.object({
+    page: z.coerce.number().min(1).optional(),
+    limit: z.coerce.number().min(1).max(100).optional(),
+    approved: z.enum(["true", "false"]).optional(),
+    product: z.string().min(1).optional()
+  })
+});
+
+// Admin: tüm yorumları (opsiyonel ürün filtresiyle) listele
+export async function listAllReviewsAdmin(req: Request, res: Response) {
+  const parsed = adminListSchema.safeParse({ query: req.query });
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.issues });
+  }
+  const page = parsed.data.query.page ?? 1;
+  const limit = parsed.data.query.limit ?? 20;
+  const skip = (page - 1) * limit;
+  const approved = parsed.data.query.approved;
+  const product = parsed.data.query.product;
+
+  const q: any = {};
+  if (typeof approved !== "undefined") q.approved = approved === "true";
+  if (product) q.product = product;
+
+  const [items, total] = await Promise.all([
+    Review.find(q)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("user", "email")
+      .populate("product", "name"),
+    Review.countDocuments(q)
+  ]);
+
+  return res.json({ page, limit, total, items });
+}
+
 const approveSchema = z.object({
   params: z.object({ reviewId: z.string().min(1) }),
   body: z.object({ approved: z.boolean() })
