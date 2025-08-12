@@ -4,7 +4,8 @@ import {
   loginSchema, registerSchema,
   requestEmailVerification, verifyEmail,
   requestPasswordReset, resetPassword,
-  requestPasswordResetSchema, resetPasswordSchema
+  requestPasswordResetSchema, resetPasswordSchema,
+  updateMe
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validate.middleware";
 import { requireAuth } from "../middlewares/auth.middleware";
@@ -22,5 +23,6 @@ router.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 router.use(requireAuth);
 router.post("/request-email-verification", requestEmailVerification);
 router.get("/me", me);
+router.patch("/me", updateMe);
 
 export default router;
