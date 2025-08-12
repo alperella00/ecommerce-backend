@@ -17,7 +17,7 @@ Secure REST API for a modern e‑commerce app. Handles products, categories, ord
 ## Installation
 ```bash
 # clone
-git clone <repo-url>
+git clone https://github.com/alperella00/ecommerce-backend.git
 cd ecommerce-backend
 
 # install
@@ -49,6 +49,12 @@ SMTP_PASS=app_password
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
+
+# AI Integration (optional)
+AI_PROVIDER=openai
+AI_API_KEY=
+AI_MODEL=gpt-4o-mini
+
 ```
 
 Seed database (sample categories, products, demo users):
