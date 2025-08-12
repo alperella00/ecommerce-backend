@@ -17,6 +17,8 @@ import reviewRoutes from "./routes/review.routes";
 import productRecoRoutes from "./routes/product.reco.routes";
 import aiRoutes from "./routes/ai.routes";
 import adminStatsRoutes from "./routes/admin.stats.routes";
+import adminCustomersRoutes from "./routes/admin.customers.routes";
+import userProfileRoutes from "./routes/user.profile.routes";
 import path from "path";
 import { UPLOADS_PUBLIC_URL, UPLOADS_ABS_DIR } from "./config/upload";
 
@@ -58,6 +60,8 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/products", productRecoRoutes);
 app.use("/api/v1/ai", aiRoutes);
 app.use("/api/v1/admin/stats", adminStatsRoutes);
+app.use("/api/v1/admin/customers", adminCustomersRoutes);
+app.use("/api/v1/users", userProfileRoutes);
 
 // static uploads
 app.use(
